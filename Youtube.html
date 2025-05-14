@@ -16,61 +16,68 @@
 
             let hasPlayedOnce = false;
 
-            csPlayer.init("video", {
-                defaultId: videoId,
-                thumbnail: false,
-                theme: "plyr",
-                loop: false
-            })
-            .then(() => {
-                const csPlayerContainer = document.querySelector("#video .csPlayer");
-                if (csPlayerContainer) {
-                    csPlayerContainer.style.position = "absolute";
-                    csPlayerContainer.style.top = "0";
-                    csPlayerContainer.style.left = "0";
-                    csPlayerContainer.style.width = "100vw";
-                    csPlayerContainer.style.height = "100vh";
-                    csPlayerContainer.style.maxWidth = "100vw";
-                    csPlayerContainer.style.maxHeight = "100vh";
-                    csPlayerContainer.style.borderRadius = "0";
+            function waitForCsPlayer() {
+                if (typeof csPlayer !== "undefined") {
+                    csPlayer.init("video", {
+                        defaultId: videoId,
+                        thumbnail: false,
+                        theme: "plyr",
+                        loop: false
+                    })
+                    .then(() => {
+                        const csPlayerContainer = document.querySelector("#video .csPlayer");
+                        if (csPlayerContainer) {
+                            csPlayerContainer.style.position = "absolute";
+                            csPlayerContainer.style.top = "0";
+                            csPlayerContainer.style.left = "0";
+                            csPlayerContainer.style.width = "100vw";
+                            csPlayerContainer.style.height = "100vh";
+                            csPlayerContainer.style.maxWidth = "100vw";
+                            csPlayerContainer.style.maxHeight = "100vh";
+                            csPlayerContainer.style.borderRadius = "0";
 
-                    // Add the overlay
-                    let overlay = document.createElement("div");
-                    overlay.id = "pauseOverlay";
-                    overlay.style.display = "none";
-                    overlay.style.position = "absolute";
-                    overlay.style.left = "0";
-                    overlay.style.width = "100%";
-                    overlay.style.height = "43%";
-                    overlay.style.bottom = "33px";
-                    overlay.style.background = "black";
-                    overlay.style.opacity = "1";
-                    overlay.style.zIndex = "10";
-                    csPlayerContainer.appendChild(overlay);
-                }
-
-                // Poll player state every 300ms
-                setInterval(() => {
-                    const overlay = document.querySelector('#video .csPlayer #pauseOverlay');
-                    if (!overlay) return;
-                    try {
-                        const state = csPlayer.getPlayerState("video");
-                        if (state === "playing") {
-                            hasPlayedOnce = true;
-                        }
-                        if (state === "paused" && hasPlayedOnce) {
-                            overlay.style.display = "block";
-                        } else {
+                            // Add the overlay
+                            let overlay = document.createElement("div");
+                            overlay.id = "pauseOverlay";
                             overlay.style.display = "none";
+                            overlay.style.position = "absolute";
+                            overlay.style.left = "0";
+                            overlay.style.width = "100%";
+                            overlay.style.height = "43%";
+                            overlay.style.bottom = "33px";
+                            overlay.style.background = "black";
+                            overlay.style.opacity = "1";
+                            overlay.style.zIndex = "10";
+                            csPlayerContainer.appendChild(overlay);
                         }
-                    } catch (e) {
-                        overlay.style.display = "none";
-                    }
-                }, 300);
-            })
-            .catch((error) => {
-                console.error("Error initializing player:", error);
-            });
+
+                        // Poll player state every 300ms
+                        setInterval(() => {
+                            const overlay = document.querySelector('#video .csPlayer #pauseOverlay');
+                            if (!overlay) return;
+                            try {
+                                const state = csPlayer.getPlayerState("video");
+                                if (state === "playing") {
+                                    hasPlayedOnce = true;
+                                }
+                                if (state === "paused" && hasPlayedOnce) {
+                                    overlay.style.display = "block";
+                                } else {
+                                    overlay.style.display = "none";
+                                }
+                            } catch (e) {
+                                overlay.style.display = "none";
+                            }
+                        }, 300);
+                    })
+                    .catch((error) => {
+                        console.error("Error initializing player:", error);
+                    });
+                } else {
+                    setTimeout(waitForCsPlayer, 50);
+                }
+            }
+            waitForCsPlayer();
         }
     </script>
     <script src="https://www.youtube.com/iframe_api"></script>

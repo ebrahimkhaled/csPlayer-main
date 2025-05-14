@@ -15,6 +15,7 @@
             const videoId = getQueryParam('video') || 'LbXKkZLH8eU'; // fallback to default
 
             let hasPlayedOnce = false;
+            let overlayHideTimeout = null;
 
             function waitForCsPlayer() {
                 if (typeof csPlayer !== "undefined") {
@@ -49,11 +50,11 @@
                             overlay.style.position = "absolute";
                             overlay.style.left = "0";
                             overlay.style.width = "100%";
-                            overlay.style.height = "43%";
-                            overlay.style.bottom = "33px";
+                            overlay.style.height = "100%";
+                            overlay.style.bottom = "0px";
                             overlay.style.background = "black";
                             overlay.style.opacity = "1";
-                            overlay.style.zIndex = "10";
+                            overlay.style.zIndex = "2";
                             csPlayerContainer.appendChild(overlay);
                         }
 
@@ -67,9 +68,20 @@
                                     hasPlayedOnce = true;
                                 }
                                 if (state === "paused" && hasPlayedOnce) {
+                                    if (overlayHideTimeout) {
+                                        clearTimeout(overlayHideTimeout);
+                                        overlayHideTimeout = null;
+                                    }
                                     overlay.style.display = "block";
                                 } else {
-                                    overlay.style.display = "none";
+                                    if (overlay.style.display === "block") {
+                                        if (!overlayHideTimeout) {
+                                            overlayHideTimeout = setTimeout(() => {
+                                                overlay.style.display = "none";
+                                                overlayHideTimeout = null;
+                                            }, 300); // 500ms = 0.5 second
+                                        }
+                                    }
                                 }
                             } catch (e) {
                                 overlay.style.display = "none";

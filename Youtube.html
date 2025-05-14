@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>csPlayer YouTube Player</title>
+    <!-- YouTube IFrame API -->
+    <script>
+        // This function will be called when the YouTube API is ready
+        function onYouTubeIframeAPIReady() {
+            // Initialize the player after API is ready
+            csPlayer.init("video", {
+                defaultId: "ajUf1wK4Uic", // Default video ID
+                thumbnail: true,
+                theme: "default",
+                loop: false
+            })
+            .then(() => {
+                console.log("Player Initialized Successfully");
+                // Dynamically add the overlay div to the .csPlayer container
+                const csPlayerContainer = document.querySelector("#video .csPlayer");
+                if (csPlayerContainer) {
+                    csPlayerContainer.style.position = "relative";
+                    let overlay = document.createElement("div");
+                    overlay.id = "pauseOverlay";
+                    overlay.style.display = "none";
+                    overlay.style.position = "absolute";
+                    overlay.style.left = "0";
+                    overlay.style.width = "100%";
+                    overlay.style.height = "33%"; // or "25%" for a quarter
+                    overlay.style.bottom = "7%"; // 5% margin from the bottom
+                    overlay.style.background = "black";
+                    overlay.style.opacity = "1";
+                    overlay.style.zIndex = "10";
+                    csPlayerContainer.appendChild(overlay);
+                }
+            })
+            .catch((error) => {
+                console.error("Error initializing player:", error);
+            });
+        }
+    </script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <!-- csPlayer CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/abtp2/csPlayer/src/csPlayer.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        #video {
+            width: 100%;
+            aspect-ratio: 16/9;
+            margin-bottom: 20px;
+        }
+        .controls {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .video-info {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="video" style="position:relative;">
+        </div>
+        <div class="controls">
+            <button onclick="playVideo()">Play</button>
+            <button onclick="pauseVideo()">Pause</button>
+            <button onclick="getVideoInfo()">Get Video Info</button>
+            <div class="video-info" id="videoInfo"></div>
+        </div>
+    </div>
+
+    <!-- csPlayer JS -->
+    <script src="https://cdn.jsdelivr.net/gh/abtp2/csPlayer/src/csPlayer.js"></script>
+    <script>
+        // Play video function
+        function playVideo() {
+            csPlayer.play("video");
+        }
+
+        // Pause video function
+        function pauseVideo() {
+            csPlayer.pause("video");
+        }
+
+        // Get video information
+        function getVideoInfo() {
+            const info = {
+                title: csPlayer.getVideoTitle("video"),
+                duration: csPlayer.getDuration("video"),
+                currentTime: csPlayer.getCurrentTime("video"),
+                state: csPlayer.getPlayerState("video")
+            };
+            
+            document.getElementById("videoInfo").innerHTML = `
+                <p><strong>Title:</strong> ${info.title}</p>
+                <p><strong>Duration:</strong> ${info.duration} seconds</p>
+                <p><strong>Current Time:</strong> ${info.currentTime} seconds</p>
+                <p><strong>Player State:</strong> ${info.state}</p>
+            `;
+        }
+
+        // Function to change video
+        function changeVideo(videoId) {
+            csPlayer.changeVideo("video", videoId);
+        }
+
+        let hasPlayedOnce = false;
+
+        // Listen for play events to set hasPlayedOnce
+        function checkIfPlayedOnce() {
+            try {
+                const state = csPlayer.getPlayerState("video");
+                if (state === "playing") {
+                    hasPlayedOnce = true;
+                }
+            } catch (e) {}
+        }
+
+        // Overlay logic to hide YouTube preview thumbnails on pause
+        function updatePauseOverlay() {
+            const overlay = document.querySelector('#video .csPlayer #pauseOverlay');
+            if (!overlay) return;
+            try {
+                const state = csPlayer.getPlayerState("video");
+                if (state === "paused" && hasPlayedOnce) {
+                    overlay.style.display = "block";
+                } else {
+                    overlay.style.display = "none";
+                }
+            } catch (e) {
+                overlay.style.display = "none";
+            }
+        }
+
+        // Poll player state every 300ms
+        setInterval(() => {
+            checkIfPlayedOnce();
+            updatePauseOverlay();
+        }, 300);
+    </script>
+</body>
+</html>

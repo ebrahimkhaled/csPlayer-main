@@ -58,7 +58,7 @@
                             csPlayerContainer.appendChild(overlay);
                         }
 
-                        // Poll player state every 300ms
+                        // Poll player state every 1 second
                         setInterval(() => {
                             const overlay = document.querySelector('#video .csPlayer #pauseOverlay');
                             if (!overlay) return;
@@ -73,20 +73,29 @@
                                         overlayHideTimeout = null;
                                     }
                                     overlay.style.display = "block";
+                                } else if (state === "playing") {
+                                    if (overlay.style.display === "block" && !overlayHideTimeout) {
+                                        overlayHideTimeout = setTimeout(() => {
+                                            overlay.style.display = "none";
+                                            overlayHideTimeout = null;
+                                        }, 200); // 0.5 second delay
+                                    }
                                 } else {
-                                    if (overlay.style.display === "block") {
-                                        if (!overlayHideTimeout) {
-                                            overlayHideTimeout = setTimeout(() => {
-                                                overlay.style.display = "none";
-                                                overlayHideTimeout = null;
-                                            }, 300); // 500ms = 0.5 second
-                                        }
+                                    // For buffering, unstarted, ended, etc.
+                                    overlay.style.display = "none";
+                                    if (overlayHideTimeout) {
+                                        clearTimeout(overlayHideTimeout);
+                                        overlayHideTimeout = null;
                                     }
                                 }
                             } catch (e) {
                                 overlay.style.display = "none";
+                                if (overlayHideTimeout) {
+                                    clearTimeout(overlayHideTimeout);
+                                    overlayHideTimeout = null;
+                                }
                             }
-                        }, 300);
+                        }, 1000);
 
                         try {
                             csPlayer.csPlayers["video"].videoTag.mute();

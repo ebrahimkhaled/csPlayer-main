@@ -22,7 +22,13 @@
                         defaultId: videoId,
                         thumbnail: false,
                         theme: "plyr",
-                        loop: false
+                        loop: false,
+                        playerVars: {
+                            autoplay: 1,
+                            mute: 1,
+                            controls: 1,
+                            playsinline: 1
+                        }
                     })
                     .then(() => {
                         const csPlayerContainer = document.querySelector("#video .csPlayer");

@@ -69,6 +69,10 @@
                                 overlay.style.display = "none";
                             }
                         }, 300);
+
+                        try {
+                            csPlayer.csPlayers["video"].videoTag.mute();
+                        } catch(e) {}
                     })
                     .catch((error) => {
                         console.error("Error initializing player:", error);
